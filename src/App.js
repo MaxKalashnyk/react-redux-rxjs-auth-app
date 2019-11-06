@@ -1,26 +1,50 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import ReactDOM from "react-dom";
+import Login from "./Login";
+import "./App.css";
+import { bindActionCreators } from "redux";
+import { fetchLogin } from "./actions";
+import { connect } from "react-redux";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  checkTokens() {
+    const tokens = localStorage.getItem("tokens")
+      ? JSON.parse(localStorage.getItem("tokens"))
+      : null;
+
+    if (tokens) {
+      return tokens.accessToken;
+    }
+    return null;
+  }
+
+  render() {
+    const { fetchLogin, isLoading, error, tokens } = this.props;
+    const tokensCheck = this.checkTokens();
+
+    return (
+      <div className="App">
+        {isLoading && <h2>Loading...</h2>}
+        {!isLoading && !tokensCheck && (
+          <Login fetchLogin={fetchLogin} tokens={tokens} error={error} />
+        )}
+        {tokensCheck && <h2>Hello, user!</h2>}
+      </div>
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = state => ({ ...state });
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      fetchLogin
+    },
+    dispatch
+  );
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
